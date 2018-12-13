@@ -1,0 +1,134 @@
+#include "math.h"
+#include "stdio.h"
+#include "stdlib.h"
+#include "treeStructure.h"
+#include "buildTree.h"
+#include "writeTree.h"
+
+
+Node *makeNode( double x, double y, int level ) {
+    
+    int i;
+    
+    Node *node = (Node *)malloc(sizeof(Node));
+    
+    node->level = level;
+    
+    node->xy[0] = x;
+    node->xy[1] = y;
+    
+    for( i=0;i<4;++i )
+        node->child[i] = NULL;
+    
+    return node;
+}
+
+void makeChildren( Node *parent ) {
+    
+    double x = parent->xy[0];
+    double y = parent->xy[1];
+    
+    int level = parent->level;
+    
+    double hChild = pow(2.0,-(level+1));
+    
+    parent->child[0] = makeNode( x,y, level+1 );
+    parent->child[1] = makeNode( x+hChild,y, level+1 );
+    parent->child[2] = makeNode( x+hChild,y+hChild, level+1 );
+    parent->child[3] = makeNode( x,y+hChild, level+1 );
+    
+    return;
+}
+
+void growTree(Node *node)
+{
+    
+    int i;
+    if( node->child[0] == NULL )
+        makeChildren( node );
+    else {
+        for ( i=0; i<4; ++i ) {
+            growTree(node->child[i] );
+        }
+    }
+    return;
+}
+
+void writeTree( Node *head ) {
+    
+    FILE *fp = fopen("quad.out","w");
+    
+    writeNode(fp,head);
+    
+    fclose(fp);
+    
+    return;
+}
+
+
+
+double nodeValue( Node *node, double time ) {
+    
+    int level = node->level;
+    double x = node->xy[0];
+    double y = node->xy[1];
+    
+    double h = pow(2.0,-level);
+    
+    return( value( x+0.5*h, y+0.5*h, time ) );
+}
+
+
+
+double value( double x, double y, double time ) {
+    
+    return( 2.0*exp(-8.0*(x-time)*(x-time)) - 1.0 ) ;
+}
+
+
+
+
+double node_value(Node *node,double time)
+{
+    double a;
+    while(node->child[0]==NULL)
+    {
+    
+            a=nodeValue( node, time);
+            if(a>0.5)
+                flag=1;
+            if(a<-0.5)
+                flag=-1;
+        
+    }
+    return flag;
+}
+
+
+void editor(Node *node,double time)
+{
+    int i,a,b;
+    a=0;
+    b=0;
+    while(node->child[0]!=NULL)
+    {
+        for(i=0;i<4;i++)
+        {
+          if(node_value(node->child[i],time)==1)
+          {
+               makeChildren( node->child[i] );
+               a+=1;//add times
+          }
+        }//addchildren
+        
+         if(node_value(node->child[0],time)==-1 && node_value(node->child[1],time)==-1 && node_value(node->child[2],time)==-1 && node_value(node->child[3],time)==-1)
+          {
+               removeChildren( node);
+               b+=1;//remove times
+          }//removechildren
+        
+    }
+    printf("This quadtree added %i nodes, removed %i nodes.",4*a,4*b);
+}
+
+
