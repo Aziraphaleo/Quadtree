@@ -6,6 +6,27 @@
 #include "writeTree.h"
 
 
+
+void flag(Node *node)
+{
+    
+    int i;
+    
+    
+    if( node->child[0] == NULL )
+        node->flag=0;
+    else{
+        for ( i=0; i<4; ++i ) {
+            flag(node->child[i] );
+            
+        }
+    }
+
+    return;
+}
+
+
+
 Node *makeNode( double x, double y, int level ) {
     
     int i;
